@@ -4,6 +4,73 @@ import { Button } from '@/components/ui/button.jsx';
 import { Phone, MessageCircle, FileText, Menu, X, Truck, Send, Mail, MessageSquare } from 'lucide-react';
 import './App.css';
 
+// ZIP Code Lookup Component
+const ZipCodeLookup = ({ onLocationChange }) => {
+  const [zipCode, setZipCode] = useState('');
+  const [location, setLocation] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const lookupZipCode = async (zip) => {
+    if (zip.length !== 5) {
+      setLocation('');
+      setError('');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      if (response.ok) {
+        const data = await response.json();
+        const locationString = `${data.places[0]['place name']}, ${data.places[0]['state abbreviation']}`;
+        setLocation(locationString);
+        onLocationChange && onLocationChange(locationString);
+      } else {
+        setLocation('');
+        setError('Invalid ZIP code or location not found');
+      }
+    } catch (err) {
+      setLocation('');
+      setError('Unable to lookup ZIP code');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleZipChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+    setZipCode(value);
+    lookupZipCode(value);
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-white font-semibold text-lg">ZIP Code *</label>
+      <input
+        type="text"
+        name="zip_code"
+        value={zipCode}
+        onChange={handleZipChange}
+        placeholder="12345"
+        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+        required
+      />
+      {isLoading && (
+        <p className="text-sm text-gray-400">Looking up location...</p>
+      )}
+      {location && (
+        <p className="text-sm text-green-400">📍 {location}</p>
+      )}
+      {error && (
+        <p className="text-sm text-red-400">❌ {error}</p>
+      )}
+    </div>
+  );
+};
+
 // Truck Animation Component
 const TruckAnimation = () => {
   const ref = useRef(null);
@@ -151,11 +218,11 @@ function App() {
   }, []);
 
   const handleCallNow = () => {
-    window.open('tel:+1-800-QUICKHAUL', '_self');
+    window.open("tel:(614)714-6637","_self");
   };
 
   const handleTextDispatch = () => {
-    window.open('https://wa.me/18005555555?text=I%20need%20dispatch%20services', '_blank');
+    window.open("https://wa.me/16147146637?text=I%20need%20dispatch%20services", "_blank");
   };
 
   const scrollToForm = () => {
@@ -179,7 +246,7 @@ function App() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <motion.div 
-              className="font-heading text-2xl font-bold"
+              className="font-heading text-xl md:text-2xl font-bold"
               whileHover={{ scale: 1.05 }}
             >
               <span className="text-white">Quick</span>
@@ -250,7 +317,7 @@ function App() {
         >
           {/* Main Headline */}
           <motion.h1
-            className="font-heading text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight"
+            className="font-heading text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -264,7 +331,7 @@ function App() {
 
           {/* Subline */}
           <motion.p
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -276,7 +343,7 @@ function App() {
 
           {/* CTA Buttons */}
           <motion.div
-            className="flex flex-col md:flex-row gap-6 justify-center items-center"
+            className="flex flex-col md:flex-row gap-4 md:gap-6 justify-center items-center"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -284,7 +351,7 @@ function App() {
             <Button
               onClick={handleCallNow}
               size="lg"
-              className="gradient-orange text-lg px-8 py-4 hover:scale-105 transition-all duration-300 pulse-glow"
+              className="gradient-orange text-lg px-6 md:px-8 py-3 md:py-4 hover:scale-105 transition-all duration-300 pulse-glow w-full md:w-auto"
             >
               <Phone className="w-5 h-5 mr-3" />
               📞 Call Now
@@ -294,7 +361,7 @@ function App() {
               onClick={handleTextDispatch}
               variant="outline"
               size="lg"
-              className="text-lg px-8 py-4 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black transition-all duration-300 hover:scale-105"
+              className="text-lg px-6 md:px-8 py-3 md:py-4 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black transition-all duration-300 hover:scale-105 w-full md:w-auto"
             >
               <MessageCircle className="w-5 h-5 mr-3" />
               💬 Text Dispatch
@@ -304,7 +371,7 @@ function App() {
               onClick={scrollToForm}
               variant="ghost"
               size="lg"
-              className="text-lg px-8 py-4 text-white hover:text-orange-500 transition-all duration-300 hover:scale-105"
+              className="text-lg px-6 md:px-8 py-3 md:py-4 text-white hover:text-orange-500 transition-all duration-300 hover:scale-105 w-full md:w-auto"
             >
               <FileText className="w-5 h-5 mr-3" />
               ✍️ Start Form
@@ -313,7 +380,7 @@ function App() {
 
           {/* Trust Indicators */}
           <motion.div
-            className="mt-16 flex flex-col md:flex-row justify-center items-center gap-8 text-gray-400"
+            className="mt-16 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 text-gray-400 text-sm md:text-base"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.8 }}
@@ -354,10 +421,10 @@ function App() {
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">
+          <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Breaking Through the <span className="text-orange-500">Dead Zone</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
             Watch our dispatch service power through the garbage load zone to deliver you premium freight opportunities.
           </p>
         </motion.div>
@@ -375,183 +442,100 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-6">
+            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
               Why <span className="text-orange-500">QuickHaulXpress</span> Dominates
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
               We don't just find loads – we engineer your success with cutting-edge technology and premium partnerships.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {/* Smart Load Matching */}
             <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
+              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileHover={{ y: -10, scale: 1.02 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:animate-pulse">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Truck className="w-8 h-8 text-white" />
                 </div>
-                
-                <h3 className="font-heading text-2xl font-bold text-white mb-4 group-hover:text-orange-500 transition-colors">
-                  🧠 Smart Load Matching
-                </h3>
-                
-                <p className="text-gray-300 mb-4 group-hover:text-white transition-colors">
-                  AI-powered algorithm matches your truck specs, preferred lanes, and rate requirements to premium loads.
-                </p>
-                
-                <div className="flex items-center text-orange-500 font-semibold group-hover:translate-x-2 transition-transform">
-                  <span>Learn More</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                <h3 className="text-xl font-bold text-white mb-4">Smart Load Matching</h3>
+                <p className="text-gray-300 mb-4">AI-powered algorithm matches you with high-paying loads based on your route, equipment, and preferences.</p>
+                <div className="text-orange-500 font-semibold">+35% Revenue Increase</div>
               </div>
             </motion.div>
 
             {/* Max Rate Bookings */}
             <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
+              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileHover={{ y: -10, scale: 1.02 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-6 group-hover:animate-pulse">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl">💰</span>
                 </div>
-                
-                <h3 className="font-heading text-2xl font-bold text-white mb-4 group-hover:text-green-500 transition-colors">
-                  💸 Max Rate Bookings
-                </h3>
-                
-                <p className="text-gray-300 mb-4 group-hover:text-white transition-colors">
-                  We negotiate the highest rates in the market. Average $2.50+ per mile with premium shippers only.
-                </p>
-                
-                <div className="flex items-center text-green-500 font-semibold group-hover:translate-x-2 transition-transform">
-                  <span>See Rates</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                <h3 className="text-xl font-bold text-white mb-4">Max Rate Bookings</h3>
+                <p className="text-gray-300 mb-4">We negotiate the highest rates and never settle for garbage loads. Premium freight only.</p>
+                <div className="text-orange-500 font-semibold">$2.50+ Per Mile Average</div>
               </div>
             </motion.div>
 
-            {/* Live GPS Load Planning */}
+            {/* 24/7 Dispatch Support */}
             <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
+              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileHover={{ y: -10, scale: 1.02 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-6 group-hover:animate-pulse">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Phone className="w-8 h-8 text-white" />
                 </div>
-                
-                <h3 className="font-heading text-2xl font-bold text-white mb-4 group-hover:text-blue-500 transition-colors">
-                  📍 Live GPS Load Planning
-                </h3>
-                
-                <p className="text-gray-300 mb-4 group-hover:text-white transition-colors">
-                  Real-time route optimization and load planning based on your exact location and destination preferences.
-                </p>
-                
-                <div className="flex items-center text-blue-500 font-semibold group-hover:translate-x-2 transition-transform">
-                  <span>Track Now</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                <h3 className="text-xl font-bold text-white mb-4">24/7 Dispatch Support</h3>
+                <p className="text-gray-300 mb-4">Round-the-clock support from experienced dispatchers who understand the trucking business.</p>
+                <div className="text-orange-500 font-semibold">Always Available</div>
               </div>
             </motion.div>
 
-            {/* Paperwork Handled */}
+            {/* Zero Dead Miles */}
             <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
+              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              whileHover={{ y: -10, scale: 1.02 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mb-6 group-hover:animate-pulse">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl">🎯</span>
                 </div>
-                
-                <h3 className="font-heading text-2xl font-bold text-white mb-4 group-hover:text-purple-500 transition-colors">
-                  📝 Paperwork? Handled.
-                </h3>
-                
-                <p className="text-gray-300 mb-4 group-hover:text-white transition-colors">
-                  Complete BOL management, rate confirmations, and invoicing. Focus on driving, we handle the rest.
-                </p>
-                
-                <div className="flex items-center text-purple-500 font-semibold group-hover:translate-x-2 transition-transform">
-                  <span>Get Started</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+                <h3 className="text-xl font-bold text-white mb-4">Zero Dead Miles</h3>
+                <p className="text-gray-300 mb-4">Strategic route planning ensures you're always loaded and making money on every mile.</p>
+                <div className="text-orange-500 font-semibold">95% Load Efficiency</div>
               </div>
             </motion.div>
           </div>
-
-          {/* Stats Section */}
-          <motion.div
-            className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <div className="text-center">
-              <div className="text-5xl font-bold text-orange-500 mb-2">98%</div>
-              <div className="text-gray-300">On-Time Delivery Rate</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-green-500 mb-2">$2.50+</div>
-              <div className="text-gray-300">Average Rate Per Mile</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-blue-500 mb-2">24/7</div>
-              <div className="text-gray-300">Dispatch Support</div>
-            </div>
-          </motion.div>
         </div>
       </section>
 
       {/* Who This Is For Section */}
-      <section className="py-20 bg-black relative overflow-hidden">
+      <section className="py-20 bg-black">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-16"
@@ -560,166 +544,104 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-6">
-              Is <span className="text-orange-500">QuickHaulXpress</span> Right for You?
+            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+              Who This Is <span className="text-orange-500">For</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              We're selective about who we work with. Here's the truth about our ideal partners.
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+              We work with serious owner-operators who are ready to level up their business.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* This IS for you */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* This is for you if... */}
             <motion.div
-              className="relative bg-gradient-to-br from-green-900/30 to-green-800/20 border-2 border-green-500/30 rounded-2xl p-8 backdrop-blur-sm"
+              className="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-500/30 rounded-2xl p-8"
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.8 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent rounded-2xl" />
-              
-              <div className="relative z-10">
-                <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="font-heading text-3xl font-bold text-green-400">
-                    ✅ This IS for you if...
-                  </h3>
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-2xl">✅</span>
                 </div>
-
-                <ul className="space-y-4 text-gray-200">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You have an <strong className="text-green-400">active MC authority</strong> for 5-6+ months</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You're <strong className="text-green-400">tired of garbage loads</strong> and low-paying freight</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You want <strong className="text-green-400">premium rates</strong> ($2.50+ per mile consistently)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You value <strong className="text-green-400">professional communication</strong> and quick responses</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You're ready to <strong className="text-green-400">scale your operation</strong> with the right partner</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You want <strong className="text-green-400">paperwork handled</strong> so you can focus on driving</span>
-                  </li>
-                </ul>
-
-                <div className="mt-8 p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-                  <p className="text-green-300 font-semibold text-center">
-                    🎯 "I'm ready to join the elite owner-operators making real money!"
-                  </p>
-                </div>
+                <h3 className="text-2xl font-bold text-white">This is for you if...</h3>
               </div>
+              <ul className="space-y-4 text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  You're tired of low-paying loads under $2.00/mile
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  You want consistent, high-quality freight
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  You're ready to invest in professional dispatch
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  You have your own authority (MC number)
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  You want to focus on driving, not load hunting
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  You're serious about growing your business
+                </li>
+              </ul>
             </motion.div>
 
-            {/* This is NOT for you */}
+            {/* This is NOT for you if... */}
             <motion.div
-              className="relative bg-gradient-to-br from-red-900/30 to-red-800/20 border-2 border-red-500/30 rounded-2xl p-8 backdrop-blur-sm"
+              className="bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-500/30 rounded-2xl p-8"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.8 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent rounded-2xl" />
-              
-              <div className="relative z-10">
-                <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <h3 className="font-heading text-3xl font-bold text-red-400">
-                    ❌ This is NOT for you if...
-                  </h3>
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-2xl">❌</span>
                 </div>
-
-                <ul className="space-y-4 text-gray-200">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You're <strong className="text-red-400">brand new</strong> to trucking (less than 5 months)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You're happy with <strong className="text-red-400">$1.50/mile loads</strong> from load boards</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You want to <strong className="text-red-400">micromanage</strong> every load decision</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You expect <strong className="text-red-400">instant responses</strong> at 3 AM on weekends</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You're looking for <strong className="text-red-400">free dispatch services</strong></span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                    <span>You don't have <strong className="text-red-400">proper insurance</strong> and documentation</span>
-                  </li>
-                </ul>
-
-                <div className="mt-8 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-                  <p className="text-red-300 font-semibold text-center">
-                    🚫 "I'm not ready to invest in premium dispatch services."
-                  </p>
-                </div>
+                <h3 className="text-2xl font-bold text-white">This is NOT for you if...</h3>
               </div>
+              <ul className="space-y-4 text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-3 mt-1">•</span>
+                  You're happy with $1.50/mile garbage loads
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-3 mt-1">•</span>
+                  You don't have your own MC authority
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-3 mt-1">•</span>
+                  You're not willing to invest in quality dispatch
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-3 mt-1">•</span>
+                  You prefer to find loads yourself
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-3 mt-1">•</span>
+                  You're looking for free services
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-3 mt-1">•</span>
+                  You're not committed to long-term success
+                </li>
+              </ul>
             </motion.div>
           </div>
-
-          {/* Call to Action */}
-          <motion.div
-            className="text-center mt-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <p className="text-2xl text-gray-300 mb-8">
-              Ready to join the <span className="text-orange-500 font-bold">Anti-Garbage Load Movement</span>?
-            </p>
-            <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <Button
-                onClick={handleCallNow}
-                size="lg"
-                className="gradient-orange text-lg px-8 py-4 hover:scale-105 transition-all duration-300"
-              >
-                <Phone className="w-5 h-5 mr-3" />
-                📞 Call Now - Let's Talk
-              </Button>
-              <Button
-                onClick={scrollToForm}
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 py-4 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black transition-all duration-300"
-              >
-                <FileText className="w-5 h-5 mr-3" />
-                ✍️ Apply Now
-              </Button>
-            </div>
-          </motion.div>
         </div>
       </section>
 
       {/* Services Offered Section */}
-      <section className="py-20 bg-gradient-to-b from-black to-gray-900">
+      <section className="py-20 bg-gradient-to-b from-gray-900 to-black">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-16"
@@ -728,204 +650,50 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-6">
-              Freight Types We <span className="text-orange-500">Dominate</span>
+            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+              Freight Types We <span className="text-orange-500">Handle</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              From dry van to specialized freight, we have the connections and expertise to get you premium loads across all equipment types.
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+              Premium rates across all equipment types. We specialize in high-value freight that pays what you deserve.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Dry Van */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-blue-900/20 to-blue-800/10 border border-blue-500/30 rounded-2xl p-6 hover:border-blue-400 transition-all duration-300 cursor-pointer"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              whileHover={{ scale: 1.05, y: -10 }}
-            >
-              <div className="text-center">
-                <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:animate-bounce">
-                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 6h18v12H3V6zm2 2v8h14V8H5zm1 1h12v6H6V9z"/>
-                  </svg>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: "🚛", name: "Dry Van", rate: "$2.20-$3.50/mile", description: "Standard freight, consistent loads" },
+              { icon: "❄️", name: "Reefer", rate: "$2.50-$4.00/mile", description: "Temperature-controlled cargo" },
+              { icon: "🔗", name: "Power Only", rate: "$2.00-$3.20/mile", description: "Pull customer trailers" },
+              { icon: "🏗️", name: "Flatbed", rate: "$2.80-$4.50/mile", description: "Construction & heavy equipment" },
+              { icon: "📦", name: "LTL", rate: "$2.30-$3.80/mile", description: "Less-than-truckload shipments" },
+              { icon: "🚚", name: "Box Truck", rate: "$2.10-$3.40/mile", description: "Local & regional delivery" },
+              { icon: "⚡", name: "Expedited", rate: "$3.00-$5.00/mile", description: "Time-sensitive freight" },
+              { icon: "🏭", name: "Specialized", rate: "$3.50-$6.00/mile", description: "Oversized & heavy haul" }
+            ].map((service, index) => (
+              <motion.div
+                key={service.name}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 group"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -5, scale: 1.02 }}
+              >
+                <div className="text-center">
+                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{service.name}</h3>
+                  <div className="text-orange-500 font-semibold text-lg mb-2">{service.rate}</div>
+                  <p className="text-gray-400 text-sm">{service.description}</p>
                 </div>
-                <h3 className="font-heading text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
-                  🚛 Dry Van
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  Standard freight, retail goods, consumer products. High-volume lanes with consistent rates.
-                </p>
-                <div className="text-blue-400 font-semibold">
-                  $2.20 - $2.80/mile
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Reefer */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-cyan-900/20 to-cyan-800/10 border border-cyan-500/30 rounded-2xl p-6 hover:border-cyan-400 transition-all duration-300 cursor-pointer"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              whileHover={{ scale: 1.05, y: -10 }}
-            >
-              <div className="text-center">
-                <div className="w-20 h-20 bg-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:animate-bounce">
-                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 6h18v12H3V6zm2 2v8h14V8H5zm1 1h12v6H6V9zm2 1v4h8v-4H8z"/>
-                    <circle cx="10" cy="12" r="1"/>
-                    <circle cx="14" cy="12" r="1"/>
-                  </svg>
-                </div>
-                <h3 className="font-heading text-2xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors">
-                  🧊 Reefer
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  Temperature-controlled freight, food products, pharmaceuticals. Premium rates for specialized equipment.
-                </p>
-                <div className="text-cyan-400 font-semibold">
-                  $2.50 - $3.20/mile
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Power Only */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-green-900/20 to-green-800/10 border border-green-500/30 rounded-2xl p-6 hover:border-green-400 transition-all duration-300 cursor-pointer"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              whileHover={{ scale: 1.05, y: -10 }}
-            >
-              <div className="text-center">
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:animate-bounce">
-                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 12h6v6H3v-6zm8-6h6v12h-6V6zm-8-4h6v4H3V2z"/>
-                  </svg>
-                </div>
-                <h3 className="font-heading text-2xl font-bold text-white mb-3 group-hover:text-green-400 transition-colors">
-                  🔌 Power Only
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  Drop and hook operations, pre-loaded trailers. Quick turnaround with excellent rates.
-                </p>
-                <div className="text-green-400 font-semibold">
-                  $2.30 - $2.90/mile
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Hot Shot */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-red-900/20 to-red-800/10 border border-red-500/30 rounded-2xl p-6 hover:border-red-400 transition-all duration-300 cursor-pointer"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              whileHover={{ scale: 1.05, y: -10 }}
-            >
-              <div className="text-center">
-                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:animate-bounce">
-                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M2 12h4v8H2v-8zm6-6h4v14H8V6zm6-4h4v18h-4V2z"/>
-                  </svg>
-                </div>
-                <h3 className="font-heading text-2xl font-bold text-white mb-3 group-hover:text-red-400 transition-colors">
-                  🔥 Hot Shot
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  Expedited freight, time-sensitive deliveries. Premium emergency rates for urgent shipments.
-                </p>
-                <div className="text-red-400 font-semibold">
-                  $2.80 - $4.00/mile
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Box Truck */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 border border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-400 transition-all duration-300 cursor-pointer"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              whileHover={{ scale: 1.05, y: -10 }}
-            >
-              <div className="text-center">
-                <div className="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:animate-bounce">
-                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M4 6h16v12H4V6zm2 2v8h12V8H6z"/>
-                  </svg>
-                </div>
-                <h3 className="font-heading text-2xl font-bold text-white mb-3 group-hover:text-yellow-400 transition-colors">
-                  📦 Box Truck
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  Local and regional deliveries, furniture, appliances. High-frequency short-haul opportunities.
-                </p>
-                <div className="text-yellow-400 font-semibold">
-                  $2.00 - $2.60/mile
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Step Deck */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-2xl p-6 hover:border-purple-400 transition-all duration-300 cursor-pointer"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              whileHover={{ scale: 1.05, y: -10 }}
-            >
-              <div className="text-center">
-                <div className="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:animate-bounce">
-                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M2 14h8v4H2v-4zm10-6h8v10h-8V8zm-10-4h8v4H2V4z"/>
-                  </svg>
-                </div>
-                <h3 className="font-heading text-2xl font-bold text-white mb-3 group-hover:text-purple-400 transition-colors">
-                  🏗️ Step Deck
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  Heavy machinery, construction equipment, oversized freight. Specialized high-value loads.
-                </p>
-                <div className="text-purple-400 font-semibold">
-                  $2.60 - $3.50/mile
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            ))}
           </div>
-
-          {/* Bottom CTA */}
-          <motion.div
-            className="text-center mt-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-          >
-            <p className="text-xl text-gray-300 mb-8">
-              Don't see your equipment type? We handle <span className="text-orange-500 font-bold">ALL freight types</span> with premium rates.
-            </p>
-            <Button
-              onClick={handleCallNow}
-              size="lg"
-              className="gradient-orange text-lg px-8 py-4 hover:scale-105 transition-all duration-300"
-            >
-              <Phone className="w-5 h-5 mr-3" />
-              📞 Discuss Your Equipment
-            </Button>
-          </motion.div>
         </div>
       </section>
 
-      <div id="testimonials" className="py-20 bg-black">
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-20 bg-black">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-16"
@@ -934,216 +702,84 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-6">
-              What Our <span className="text-orange-500">Elite Drivers</span> Say
+            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+              Real Results from <span className="text-orange-500">Real Drivers</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Real testimonials from owner-operators who escaped the garbage load trap and joined the premium freight movement.
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+              See how QuickHaulXpress transformed these owner-operators' businesses and income.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* Testimonial 1 */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <div className="flex items-start mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                  <span className="text-white font-bold text-xl">MR</span>
-                </div>
-                <div>
-                  <h4 className="font-heading text-xl font-bold text-white mb-1">Mike Rodriguez</h4>
-                  <p className="text-orange-500 font-semibold">Dry Van • Dallas, TX</p>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <div className="flex text-yellow-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <blockquote className="text-gray-300 text-lg leading-relaxed">
-                  "I was stuck running $1.80/mile loads for months. QuickHaulXpress got me on a dedicated lane at $2.65/mile within the first week. My monthly revenue jumped 40%!"
-                </blockquote>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm text-gray-400">
-                <span>6 months with QHX</span>
-                <span className="text-green-400 font-semibold">+$3,200/month</span>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 2 */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <div className="flex items-start mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                  <span className="text-white font-bold text-xl">SJ</span>
-                </div>
-                <div>
-                  <h4 className="font-heading text-xl font-bold text-white mb-1">Sarah Johnson</h4>
-                  <p className="text-blue-500 font-semibold">Reefer • Atlanta, GA</p>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <div className="flex text-yellow-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <blockquote className="text-gray-300 text-lg leading-relaxed">
-                  "The paperwork alone was killing me. Now QHX handles everything - BOLs, rate confirmations, invoicing. I just drive and collect checks. Best decision ever!"
-                </blockquote>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm text-gray-400">
-                <span>8 months with QHX</span>
-                <span className="text-green-400 font-semibold">+$2,800/month</span>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 3 */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <div className="flex items-start mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                  <span className="text-white font-bold text-xl">DT</span>
-                </div>
-                <div>
-                  <h4 className="font-heading text-xl font-bold text-white mb-1">David Thompson</h4>
-                  <p className="text-green-500 font-semibold">Power Only • Phoenix, AZ</p>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <div className="flex text-yellow-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <blockquote className="text-gray-300 text-lg leading-relaxed">
-                  "I was skeptical about dispatch services, but QHX proved me wrong. They found me drop-and-hook loads paying $2.85/mile. No more waiting around for hours!"
-                </blockquote>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm text-gray-400">
-                <span>4 months with QHX</span>
-                <span className="text-green-400 font-semibold">+$4,100/month</span>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 4 */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <div className="flex items-start mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                  <span className="text-white font-bold text-xl">LM</span>
-                </div>
-                <div>
-                  <h4 className="font-heading text-xl font-bold text-white mb-1">Lisa Martinez</h4>
-                  <p className="text-purple-500 font-semibold">Hot Shot • Houston, TX</p>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <div className="flex text-yellow-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <blockquote className="text-gray-300 text-lg leading-relaxed">
-                  "Emergency loads at $3.50/mile? Yes please! QHX has connections I never knew existed. My hot shot business doubled in 3 months. These guys are the real deal."
-                </blockquote>
-              </div>
-              
-              <div className="flex items-center justify-between text-sm text-gray-400">
-                <span>3 months with QHX</span>
-                <span className="text-green-400 font-semibold">+$5,200/month</span>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Bottom Stats */}
-          <motion.div
-            className="mt-16 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-orange-500 mb-2">4.9/5</div>
-                <div className="text-gray-300">Average Rating</div>
-                <div className="flex justify-center mt-2">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-green-500 mb-2">+$3,800</div>
-                <div className="text-gray-300">Average Monthly Increase</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-blue-500 mb-2">97%</div>
-                <div className="text-gray-300">Driver Retention Rate</div>
-              </div>
-            </div>
-
-            <div className="mt-12">
-              <p className="text-xl text-gray-300 mb-8">
-                Ready to join these <span className="text-orange-500 font-bold">success stories</span>?
-              </p>
-              <Button
-                onClick={handleCallNow}
-                size="lg"
-                className="gradient-orange text-lg px-8 py-4 hover:scale-105 transition-all duration-300"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                name: "Mike Rodriguez",
+                location: "Dallas, TX",
+                equipment: "Dry Van",
+                quote: "Went from $1.80/mile to $2.65/mile average. Made an extra $45K last year!",
+                avatar: "👨‍🚛",
+                increase: "+47% Revenue"
+              },
+              {
+                name: "Sarah Johnson",
+                location: "Atlanta, GA",
+                equipment: "Reefer",
+                quote: "No more dead miles! QuickHaul keeps me loaded and profitable every week.",
+                avatar: "👩‍🚛",
+                increase: "+38% Efficiency"
+              },
+              {
+                name: "Carlos Martinez",
+                location: "Phoenix, AZ",
+                equipment: "Flatbed",
+                quote: "Best dispatch service I've used. They actually care about my success.",
+                avatar: "👨‍🚛",
+                increase: "+52% Income"
+              },
+              {
+                name: "David Thompson",
+                location: "Nashville, TN",
+                equipment: "Power Only",
+                quote: "Finally found a dispatch that gets me premium loads consistently.",
+                avatar: "👨‍🚛",
+                increase: "+41% Profit"
+              }
+            ].map((testimonial, index) => (
+              <motion.div
+                key={testimonial.name}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
               >
-                <Phone className="w-5 h-5 mr-3" />
-                📞 Start Your Success Story
-              </Button>
-            </div>
-          </motion.div>
+                <div className="flex items-center mb-4">
+                  <div className="text-3xl mr-3">{testimonial.avatar}</div>
+                  <div>
+                    <h4 className="text-white font-semibold">{testimonial.name}</h4>
+                    <p className="text-gray-400 text-sm">{testimonial.location}</p>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <span className="bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full text-sm">
+                    {testimonial.equipment}
+                  </span>
+                </div>
+                <blockquote className="text-gray-300 mb-4 italic">
+                  "{testimonial.quote}"
+                </blockquote>
+                <div className="text-green-500 font-semibold">
+                  {testimonial.increase}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div id="contact" className="py-20 bg-gradient-to-b from-black to-gray-900">
+      {/* Contact Form Section */}
+      <section id="contact" className="py-20 bg-gradient-to-b from-gray-900 to-black">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-16"
@@ -1152,31 +788,30 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to <span className="text-orange-500">Escape the Garbage Load Trap</span>?
+            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+              Ready to <span className="text-orange-500">Escape</span> Garbage Loads?
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Fill out the form below and we'll contact you within 24 hours to discuss premium freight opportunities for your operation.
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+              Fill out the form below and we'll get you started with premium freight immediately.
             </p>
           </motion.div>
 
           <div className="max-w-4xl mx-auto">
             <motion.div
-              className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 md:p-12 rounded-3xl border border-gray-700"
-              initial={{ opacity: 0, y: 50 }}
+              className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700"
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              <form action="https://formspree.io/f/mzbledlr" method="POST" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-white font-semibold text-lg">Full Name *</label>
                     <input
                       type="text"
+                      name="full_name"
                       placeholder="Enter your full name"
                       className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                       required
@@ -1185,11 +820,10 @@ function App() {
 
                   {/* Phone Number */}
                   <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">
-                      Phone Number <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-white font-semibold text-lg">Phone Number *</label>
                     <input
                       type="tel"
+                      name="phone"
                       placeholder="(555) 123-4567"
                       className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                       required
@@ -1198,11 +832,10 @@ function App() {
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">
-                      Email Address <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-white font-semibold text-lg">Email Address *</label>
                     <input
                       type="email"
+                      name="email"
                       placeholder="your.email@example.com"
                       className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                       required
@@ -1211,74 +844,134 @@ function App() {
 
                   {/* MC Number */}
                   <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">
-                      MC Number <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-white font-semibold text-lg">MC Number *</label>
                     <input
                       type="text"
-                      placeholder="MC-123456"
+                      name="mc_number"
+                      placeholder="MC123456"
                       className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                       required
                     />
                   </div>
 
-                  {/* Truck Type */}
+                  {/* Equipment Type */}
                   <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">
-                      Equipment Type <span className="text-red-500">*</span>
-                    </label>
+                    <label className="text-white font-semibold text-lg">Equipment Type *</label>
                     <select
+                      name="equipment_type"
                       className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                       required
                     >
-                      <option value="">Select your equipment type</option>
-                      <option value="dry-van">🚛 Dry Van</option>
-                      <option value="reefer">🧊 Reefer</option>
-                      <option value="power-only">🔌 Power Only</option>
-                      <option value="hot-shot">🔥 Hot Shot</option>
-                      <option value="box-truck">📦 Box Truck</option>
-                      <option value="step-deck">🏗️ Step Deck</option>
-                      <option value="flatbed">🚚 Flatbed</option>
-                      <option value="lowboy">🚛 Lowboy</option>
-                      <option value="other">🔧 Other</option>
+                      <option value="">Select your equipment</option>
+                      <option value="dry_van">🚛 Dry Van</option>
+                      <option value="reefer">❄️ Reefer</option>
+                      <option value="flatbed">🏗️ Flatbed</option>
+                      <option value="power_only">🔗 Power Only</option>
+                      <option value="box_truck">🚚 Box Truck</option>
+                      <option value="specialized">🏭 Specialized</option>
                     </select>
                   </div>
 
-                  {/* ZIP Code */}
-                  <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">
-                      Home Base ZIP Code <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="12345"
-                      pattern="[0-9]{5}"
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
-                      required
-                    />
+                  {/* ZIP Code with Location Lookup */}
+                  <ZipCodeLookup />
+                </div>
+
+                {/* File Upload Section */}
+                <div className="space-y-6">
+                  <h3 className="text-white font-semibold text-xl">Required Documents</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* W-9 Upload */}
+                    <div className="space-y-2">
+                      <label className="text-white font-semibold">Upload W-9 *</label>
+                      <input
+                        type="file"
+                        name="w9"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+                        required
+                      />
+                    </div>
+
+                    {/* Certificate of Insurance Upload */}
+                    <div className="space-y-2">
+                      <label className="text-white font-semibold">Certificate of Insurance *</label>
+                      <input
+                        type="file"
+                        name="coi"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+                        required
+                      />
+                    </div>
+
+                    {/* MC Authority Upload */}
+                    <div className="space-y-2">
+                      <label className="text-white font-semibold">MC Authority *</label>
+                      <input
+                        type="file"
+                        name="mc_authority"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+                        required
+                      />
+                    </div>
+
+                    {/* Factoring NOA or Voided Check Upload */}
+                    <div className="space-y-2">
+                      <label className="text-white font-semibold">Factoring NOA or Voided Check *</label>
+                      <input
+                        type="file"
+                        name="factoring_doc"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Current Rate */}
-                <div className="space-y-2">
-                  <label className="text-white font-semibold text-lg">
-                    What's your current average rate per mile?
-                  </label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-4">
+                  <label className="text-white font-semibold text-lg">What's your current average rate per mile?</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { value: "under-1.50", label: "Under $1.50", color: "red" },
-                      { value: "1.50-2.00", label: "$1.50 - $2.00", color: "yellow" },
-                      { value: "2.00-2.50", label: "$2.00 - $2.50", color: "blue" },
-                      { value: "over-2.50", label: "Over $2.50", color: "green" }
+                      { value: "under_1_50", label: "Under $1.50" },
+                      { value: "1_50_2_00", label: "$1.50-$2.00" },
+                      { value: "2_00_2_50", label: "$2.00-$2.50" },
+                      { value: "over_2_50", label: "Over $2.50" }
                     ].map((rate) => (
-                      <label key={rate.value} className="flex items-center space-x-2 cursor-pointer">
+                      <label key={rate.value} className="flex items-center space-x-3 cursor-pointer">
                         <input
                           type="radio"
-                          name="current-rate"
+                          name="current_rate"
                           value={rate.value}
-                          className="text-orange-500 focus:ring-orange-500"
+                          className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 focus:ring-orange-500"
+                          required
                         />
-                        <span className={`text-${rate.color}-400 font-medium`}>{rate.label}</span>
+                        <span className="text-white">{rate.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Urgency */}
+                <div className="space-y-4">
+                  <label className="text-white font-semibold text-lg">How soon do you need loads?</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { value: "immediately", label: "🚨 Immediately" },
+                      { value: "this_week", label: "📅 This Week" },
+                      { value: "next_week", label: "⏰ Next Week" }
+                    ].map((urgency) => (
+                      <label key={urgency.value} className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="urgency"
+                          value={urgency.value}
+                          className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 focus:ring-orange-500"
+                          required
+                        />
+                        <span className="text-white">{urgency.label}</span>
                       </label>
                     ))}
                   </div>
@@ -1286,96 +979,66 @@ function App() {
 
                 {/* Additional Comments */}
                 <div className="space-y-2">
-                  <label className="text-white font-semibold text-lg">
-                    Tell us about your operation (Optional)
-                  </label>
+                  <label className="text-white font-semibold text-lg">Additional Comments</label>
                   <textarea
-                    placeholder="How many trucks do you operate? What lanes do you prefer? Any specific requirements?"
-                    rows={4}
+                    name="comments"
+                    rows="4"
+                    placeholder="Tell us about your preferred lanes, any special requirements, or questions you have..."
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 resize-none"
-                  />
-                </div>
-
-                {/* Urgency */}
-                <div className="space-y-2">
-                  <label className="text-white font-semibold text-lg">
-                    How soon do you want to start? <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {[
-                      { value: "immediately", label: "🚀 Immediately", desc: "Ready to start this week" },
-                      { value: "within-month", label: "📅 Within a month", desc: "Planning ahead" },
-                      { value: "just-exploring", label: "🔍 Just exploring", desc: "Gathering information" }
-                    ].map((urgency) => (
-                      <label key={urgency.value} className="flex items-start space-x-3 cursor-pointer p-3 border border-gray-600 rounded-lg hover:border-orange-500 transition-colors">
-                        <input
-                          type="radio"
-                          name="urgency"
-                          value={urgency.value}
-                          className="mt-1 text-orange-500 focus:ring-orange-500"
-                          required
-                        />
-                        <div>
-                          <div className="text-white font-medium">{urgency.label}</div>
-                          <div className="text-gray-400 text-sm">{urgency.desc}</div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
+                  ></textarea>
                 </div>
 
                 {/* Submit Button */}
-                <div className="pt-6">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full gradient-orange text-xl py-4 hover:scale-105 transition-all duration-300"
-                  >
-                    <Send className="w-6 h-6 mr-3" />
-                    🚀 Get My Premium Freight Quote
-                  </Button>
-                  
-                  <p className="text-center text-gray-400 mt-4 text-sm">
-                    We respect your privacy. Your information will never be shared with third parties.
-                  </p>
-                </div>
+                <motion.button
+                  type="submit"
+                  className="w-full gradient-orange text-white font-bold py-4 px-8 rounded-lg hover:scale-105 transition-all duration-300 text-lg"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Send className="w-5 h-5 mr-3 inline" />
+                  Get Started with Premium Loads
+                </motion.button>
               </form>
+            </motion.div>
 
-              {/* Contact Info */}
-              <div className="mt-12 pt-8 border-t border-gray-700">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                  <div className="space-y-2">
-                    <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
-                      <Phone className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="text-white font-semibold">Call Us</h4>
-                    <p className="text-gray-300">(555) 123-4567</p>
-                    <p className="text-sm text-gray-400">Mon-Fri 7AM-7PM EST</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
-                      <Mail className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="text-white font-semibold">Email Us</h4>
-                    <p className="text-gray-300">dispatch@quickhaulxpress.com</p>
-                    <p className="text-sm text-gray-400">24/7 Response</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
-                      <MessageSquare className="w-6 h-6 text-white" />
-                    </div>
-                    <h4 className="text-white font-semibold">Text Us</h4>
-                    <p className="text-gray-300">(555) 123-4567</p>
-                    <p className="text-sm text-gray-400">Quick Questions</p>
-                  </div>
+            {/* Contact Information */}
+            <motion.div
+              className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              <div className="space-y-2">
+                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
+                  <Phone className="w-6 h-6 text-white" />
                 </div>
+                <h4 className="text-white font-semibold">Call Us</h4>
+                <p className="text-gray-300">(614) 714-6637</p>
+                <p className="text-sm text-gray-400">Mon-Fri 7AM-7PM EST</p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
+                  <Mail className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-white font-semibold">Email Us</h4>
+                <p className="text-gray-300">lucas.otrdispatch@gmail.com</p>
+                <p className="text-sm text-gray-400">24/7 Response</p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
+                  <MessageSquare className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-white font-semibold">Text Us</h4>
+                <p className="text-gray-300">(614) 714-6637</p>
+                <p className="text-sm text-gray-400">Instant Response</p>
               </div>
             </motion.div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Onboarding Popup */}
       <AnimatePresence>
@@ -1385,61 +1048,52 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowOnboardingPopup(false)}
           >
             <motion.div
-              className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-3xl border border-orange-500 max-w-md w-full relative"
-              initial={{ scale: 0.8, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 50 }}
-              onClick={(e) => e.stopPropagation()}
+              className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-orange-500 max-w-md w-full relative"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.3 }}
             >
               <button
                 onClick={() => setShowOnboardingPopup(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                className="absolute top-4 right-4 text-gray-400 hover:text-white"
               >
-                <X className="w-6 h-6" />
+                <X size={24} />
               </button>
-
+              
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Truck className="w-8 h-8 text-white" />
-                </div>
-                
-                <h3 className="font-heading text-2xl font-bold text-white mb-4">
-                  🚛 Still Getting Garbage Loads?
+                <div className="text-4xl mb-4">🚛</div>
+                <h3 className="text-2xl font-bold text-white mb-4">
+                  Ready to Escape Garbage Loads?
                 </h3>
-                
                 <p className="text-gray-300 mb-6">
-                  Join 500+ owner-operators who escaped the low-paying freight trap. Get premium loads at $2.50+ per mile!
+                  Join 500+ owner-operators making $2.50+ per mile with premium freight.
                 </p>
-
                 <div className="space-y-3">
                   <Button
                     onClick={() => {
+                      handleCallNow();
                       setShowOnboardingPopup(false);
-                      document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="w-full gradient-orange text-lg py-3"
+                    className="w-full gradient-orange"
                   >
-                    🚀 Get Premium Loads Now
+                    <Phone className="w-4 h-4 mr-2" />
+                    Call Now: (614) 714-6637
                   </Button>
-                  
                   <Button
                     onClick={() => {
+                      handleTextDispatch();
                       setShowOnboardingPopup(false);
-                      window.open('tel:(555)123-4567', '_self');
                     }}
                     variant="outline"
                     className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black"
                   >
-                    📞 Call Now: (555) 123-4567
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Text Us Now
                   </Button>
                 </div>
-
-                <p className="text-xs text-gray-400 mt-4">
-                  ✅ No spam, just premium freight opportunities
-                </p>
               </div>
             </motion.div>
           </motion.div>
@@ -1450,52 +1104,34 @@ function App() {
       <AnimatePresence>
         {showStickyBar && (
           <motion.div
-            className="fixed bottom-6 right-6 z-40"
+            className="fixed bottom-4 right-4 z-40"
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ duration: 0.3 }}
           >
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-4 shadow-2xl border border-orange-400">
-              <div className="flex flex-col space-y-3">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full p-3 shadow-lg">
+              <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => window.open('tel:(555)123-4567', '_self')}
-                  className="flex items-center space-x-3 bg-white/20 hover:bg-white/30 rounded-xl p-3 transition-all duration-300 group"
+                  onClick={handleCallNow}
+                  className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 group"
+                  title="Call Now"
                 >
-                  <Phone className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-                  <div className="text-left">
-                    <div className="text-white font-semibold text-sm">Call Now</div>
-                    <div className="text-orange-100 text-xs">(555) 123-4567</div>
-                  </div>
+                  <Phone className="w-6 h-6 text-orange-500" />
                 </button>
-
                 <button
-                  onClick={() => window.open('sms:(555)123-4567', '_self')}
-                  className="flex items-center space-x-3 bg-white/20 hover:bg-white/30 rounded-xl p-3 transition-all duration-300 group"
+                  onClick={handleTextDispatch}
+                  className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 group"
+                  title="Text Us"
                 >
-                  <MessageSquare className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-                  <div className="text-left">
-                    <div className="text-white font-semibold text-sm">Text Us</div>
-                    <div className="text-orange-100 text-xs">Quick Response</div>
-                  </div>
+                  <MessageCircle className="w-6 h-6 text-orange-500" />
                 </button>
-
                 <button
-                  onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })}
-                  className="flex items-center space-x-3 bg-white/20 hover:bg-white/30 rounded-xl p-3 transition-all duration-300 group"
+                  onClick={() => window.open("mailto:lucas.otrdispatch@gmail.com", "_blank")}
+                  className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 group"
+                  title="Email Us"
                 >
-                  <FileText className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-                  <div className="text-left">
-                    <div className="text-white font-semibold text-sm">Apply</div>
-                    <div className="text-orange-100 text-xs">Get Quote</div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setShowStickyBar(false)}
-                  className="self-center text-white/70 hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
+                  <Mail className="w-6 h-6 text-orange-500" />
                 </button>
               </div>
             </div>
