@@ -804,7 +804,7 @@ function App() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <form action="https://formspree.io/f/mzbledlr" method="POST" className="space-y-6">
+              <form action="https://formspree.io/f/xanjolal" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div className="space-y-2">
