@@ -5,11 +5,20 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/quickhaulxpress-landing/',
+  base: './',
   plugins: [react(),tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
 })
+

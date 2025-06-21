@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button.jsx';
-import { Phone, MessageCircle, FileText, Menu, X, Truck, Send, Mail, MessageSquare } from 'lucide-react';
+import { Phone, MessageCircle, FileText, Menu, X, Truck, Send, Mail, MessageSquare, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import './App.css';
 
 // ZIP Code Lookup Component
@@ -68,6 +68,347 @@ const ZipCodeLookup = ({ onLocationChange }) => {
         <p className="text-sm text-red-400">❌ {error}</p>
       )}
     </div>
+  );
+};
+
+// Contact Form Component
+const ContactForm = () => {
+  const [formData, setFormData] = useState({
+    full_name: '',
+    phone: '',
+    email: '',
+    mc_number: '',
+    equipment_type: '',
+    zip_code: '',
+    location: '',
+    current_rate: '',
+    urgency: '',
+    comments: ''
+  });
+  const [files, setFiles] = useState({
+    w9: null,
+    coi: null,
+    mc_authority: null,
+    factoring_doc: null
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const { name, files: fileList } = e.target;
+    setFiles(prev => ({
+      ...prev,
+      [name]: fileList[0] || null
+    }));
+  };
+
+  const handleLocationChange = (location) => {
+    setFormData(prev => ({
+      ...prev,
+      location: location
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitMessage('');
+
+    try {
+      const formDataToSend = new FormData();
+      
+      // Add form fields
+      Object.keys(formData).forEach(key => {
+        formDataToSend.append(key, formData[key]);
+      });
+
+      // Add files (only if they exist)
+      Object.keys(files).forEach(key => {
+        if (files[key]) {
+          formDataToSend.append(key, files[key]);
+        }
+      });
+
+      // For development, use localhost. For production, use your deployed backend URL
+      const backendUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://8xhpiqce768w.manus.space' 
+        : 'http://localhost:5000';
+
+      const response = await fetch(`${backendUrl}/api/contact/submit`, {
+        method: 'POST',
+        body: formDataToSend
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitSuccess(true);
+        setSubmitMessage('Thank you! Your form has been submitted successfully. We will contact you soon.');
+        // Reset form
+        setFormData({
+          full_name: '',
+          phone: '',
+          email: '',
+          mc_number: '',
+          equipment_type: '',
+          zip_code: '',
+          location: '',
+          current_rate: '',
+          urgency: '',
+          comments: ''
+        });
+        setFiles({
+          w9: null,
+          coi: null,
+          mc_authority: null,
+          factoring_doc: null
+        });
+        // Reset file inputs
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => input.value = '');
+      } else {
+        setSubmitSuccess(false);
+        setSubmitMessage(result.message || 'There was an error submitting your form. Please try again.');
+      }
+    } catch (error) {
+      setSubmitSuccess(false);
+      setSubmitMessage('There was an error submitting your form. Please try again.');
+      console.error('Form submission error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Full Name */}
+        <div className="space-y-2">
+          <label className="text-white font-semibold text-lg">Full Name *</label>
+          <input
+            type="text"
+            name="full_name"
+            value={formData.full_name}
+            onChange={handleInputChange}
+            placeholder="Enter your full name"
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+            required
+          />
+        </div>
+
+        {/* Phone Number */}
+        <div className="space-y-2">
+          <label className="text-white font-semibold text-lg">Phone Number *</label>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            placeholder="(614) 714-6637"
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+            required
+          />
+        </div>
+
+        {/* Email */}
+        <div className="space-y-2">
+          <label className="text-white font-semibold text-lg">Email Address *</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            placeholder="your.email@example.com"
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+            required
+          />
+        </div>
+
+        {/* MC Number */}
+        <div className="space-y-2">
+          <label className="text-white font-semibold text-lg">MC Number *</label>
+          <input
+            type="text"
+            name="mc_number"
+            value={formData.mc_number}
+            onChange={handleInputChange}
+            placeholder="MC123456"
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+            required
+          />
+        </div>
+
+        {/* Equipment Type */}
+        <div className="space-y-2">
+          <label className="text-white font-semibold text-lg">Equipment Type *</label>
+          <select
+            name="equipment_type"
+            value={formData.equipment_type}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+            required
+          >
+            <option value="">Select your equipment</option>
+            <option value="dry_van">🚛 Dry Van</option>
+            <option value="reefer">❄️ Reefer</option>
+            <option value="flatbed">🏗️ Flatbed</option>
+            <option value="power_only">🔗 Power Only</option>
+            <option value="box_truck">🚚 Box Truck</option>
+            <option value="specialized">🏭 Specialized</option>
+          </select>
+        </div>
+
+        {/* ZIP Code with Location Lookup */}
+        <ZipCodeLookup onLocationChange={handleLocationChange} />
+      </div>
+
+      {/* Optional Documents Section */}
+      <div className="space-y-4">
+        <h3 className="text-white font-semibold text-xl">Optional Documents</h3>
+        <p className="text-gray-400 text-sm">Upload these documents to speed up the onboarding process (optional)</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Upload W-9 */}
+          <div className="space-y-2">
+            <label className="text-white font-semibold text-lg">Upload W-9 (Optional)</label>
+            <input
+              type="file"
+              name="w9"
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+            />
+          </div>
+
+          {/* Certificate of Insurance */}
+          <div className="space-y-2">
+            <label className="text-white font-semibold text-lg">Certificate of Insurance (Optional)</label>
+            <input
+              type="file"
+              name="coi"
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+            />
+          </div>
+
+          {/* MC Authority */}
+          <div className="space-y-2">
+            <label className="text-white font-semibold text-lg">MC Authority (Optional)</label>
+            <input
+              type="file"
+              name="mc_authority"
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+            />
+          </div>
+
+          {/* Factoring NOA or Voided Check */}
+          <div className="space-y-2">
+            <label className="text-white font-semibold text-lg">Factoring NOA or Voided Check (Optional)</label>
+            <input
+              type="file"
+              name="factoring_doc"
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Rate and Urgency */}
+      <div className="space-y-6">
+        {/* Current Rate */}
+        <div className="space-y-3">
+          <label className="text-white font-semibold text-lg">What's your current average rate per mile?</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { value: 'under_1_50', label: 'Under $1.50' },
+              { value: '1_50_2_00', label: '$1.50-$2.00' },
+              { value: '2_00_2_50', label: '$2.00-$2.50' },
+              { value: 'over_2_50', label: 'Over $2.50' }
+            ].map((option) => (
+              <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="current_rate"
+                  value={option.value}
+                  checked={formData.current_rate === option.value}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 focus:ring-orange-500"
+                />
+                <span className="text-white text-sm">{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Urgency */}
+        <div className="space-y-3">
+          <label className="text-white font-semibold text-lg">How soon do you need loads?</label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              { value: 'immediately', label: '🚨 Immediately' },
+              { value: 'this_week', label: '📅 This Week' },
+              { value: 'next_week', label: '⏰ Next Week' }
+            ].map((option) => (
+              <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="urgency"
+                  value={option.value}
+                  checked={formData.urgency === option.value}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 focus:ring-orange-500"
+                />
+                <span className="text-white text-sm">{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Comments */}
+      <div className="space-y-2">
+        <label className="text-white font-semibold text-lg">Additional Comments</label>
+        <textarea
+          name="comments"
+          value={formData.comments}
+          onChange={handleInputChange}
+          rows={4}
+          placeholder="Tell us about your preferred lanes, any special requirements, or questions you have..."
+          className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 resize-none"
+        />
+      </div>
+
+      {/* Submit Button */}
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full gradient-orange text-lg py-4 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Send className="w-5 h-5 mr-3" />
+        {isSubmitting ? 'Submitting...' : 'Get Started with Premium Loads'}
+      </Button>
+
+      {/* Submit Message */}
+      {submitMessage && (
+        <div className={`p-4 rounded-lg ${submitSuccess ? 'bg-green-600/20 border border-green-500 text-green-400' : 'bg-red-600/20 border border-red-500 text-red-400'}`}>
+          {submitMessage}
+        </div>
+      )}
+    </form>
   );
 };
 
@@ -246,12 +587,19 @@ function App() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <motion.div 
-              className="font-heading text-xl md:text-2xl font-bold"
+              className="font-heading text-xl md:text-2xl font-bold flex items-center space-x-3"
               whileHover={{ scale: 1.05 }}
             >
-              <span className="text-white">Quick</span>
-              <span className="text-orange-500">Haul</span>
-              <span className="text-white">Xpress</span>
+              <img 
+                src="/logo.png" 
+                alt="QuickHaulXpress Logo" 
+                className="h-10 w-10 object-contain"
+              />
+              <div className="flex">
+                <span className="text-white">Quick</span>
+                <span className="text-orange-500">Haul</span>
+                <span className="text-white">Xpress</span>
+              </div>
             </motion.div>
 
             {/* Desktop Navigation */}
@@ -412,28 +760,11 @@ function App() {
         </motion.div>
       </section>
 
-      {/* Truck Animation Section */}
-      <section className="container mx-auto px-4">
-        <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        >
-          <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-            Breaking Through the <span className="text-orange-500">Dead Zone</span>
-          </h2>
-          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-            Watch our dispatch service power through the garbage load zone to deliver you premium freight opportunities.
-          </p>
-        </motion.div>
-        
-        <TruckAnimation />
-      </section>
+      {/* Truck Animation */}
+      <TruckAnimation />
 
       {/* Feature Highlights Section */}
-      <section id="services" className="py-20 bg-gradient-to-b from-gray-900 to-black">
+      <section id="services" className="py-20 bg-gradient-to-b from-black to-gray-900">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-16"
@@ -442,94 +773,59 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Why <span className="text-orange-500">QuickHaulXpress</span> Dominates
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
+              Why <span className="text-orange-500">QuickHaulXpress</span> Drivers Earn More
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
-              We don't just find loads – we engineer your success with cutting-edge technology and premium partnerships.
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              We don't just find loads. We find the RIGHT loads that maximize your revenue and minimize your stress.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {/* Smart Load Matching */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Truck className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Smart Load Matching</h3>
-                <p className="text-gray-300 mb-4">AI-powered algorithm matches you with high-paying loads based on your route, equipment, and preferences.</p>
-                <div className="text-orange-500 font-semibold">+35% Revenue Increase</div>
-              </div>
-            </motion.div>
-
-            {/* Max Rate Bookings */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">💰</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Max Rate Bookings</h3>
-                <p className="text-gray-300 mb-4">We negotiate the highest rates and never settle for garbage loads. Premium freight only.</p>
-                <div className="text-orange-500 font-semibold">$2.50+ Per Mile Average</div>
-              </div>
-            </motion.div>
-
-            {/* 24/7 Dispatch Support */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Phone className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">24/7 Dispatch Support</h3>
-                <p className="text-gray-300 mb-4">Round-the-clock support from experienced dispatchers who understand the trucking business.</p>
-                <div className="text-orange-500 font-semibold">Always Available</div>
-              </div>
-            </motion.div>
-
-            {/* Zero Dead Miles */}
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800 to-gray-900 p-6 md:p-8 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 cursor-pointer overflow-hidden"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">🎯</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Zero Dead Miles</h3>
-                <p className="text-gray-300 mb-4">Strategic route planning ensures you're always loaded and making money on every mile.</p>
-                <div className="text-orange-500 font-semibold">95% Load Efficiency</div>
-              </div>
-            </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: "🎯",
+                title: "Smart Load Matching",
+                description: "AI-powered system matches you with loads that fit your route, equipment, and rate requirements.",
+                stat: "+47% Revenue",
+                delay: 0.1
+              },
+              {
+                icon: "💰",
+                title: "Max Rate Bookings",
+                description: "We negotiate the highest rates and never settle for cheap freight. Your time is valuable.",
+                stat: "+38% Efficiency",
+                delay: 0.2
+              },
+              {
+                icon: "📈",
+                title: "Premium Load Network",
+                description: "Exclusive access to high-paying shippers who value reliable owner-operators like you.",
+                stat: "+52% Income",
+                delay: 0.3
+              },
+              {
+                icon: "🚀",
+                title: "24/7 Dispatch Support",
+                description: "Real human dispatchers available around the clock. No bots, no delays, just results.",
+                stat: "+41% Profit",
+                delay: 0.4
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 hover:border-orange-500/50 transition-all duration-300 hover:scale-105"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: feature.delay }}
+              >
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
+                <p className="text-gray-300 mb-4 leading-relaxed">{feature.description}</p>
+                <div className="text-green-400 font-bold text-lg">{feature.stat}</div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -544,95 +840,80 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Who This Is <span className="text-orange-500">For</span>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
+              Is <span className="text-orange-500">QuickHaulXpress</span> Right for You?
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
-              We work with serious owner-operators who are ready to level up their business.
-            </p>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* This is for you if... */}
+            {/* This is for you */}
             <motion.div
-              className="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-500/30 rounded-2xl p-8"
-              initial={{ opacity: 0, x: -50 }}
+              className="bg-gradient-to-br from-green-900/30 to-green-800/30 border border-green-500/30 p-8 rounded-2xl"
+              initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-2xl">✅</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white">This is for you if...</h3>
+                <div className="text-4xl mr-4">✅</div>
+                <h3 className="text-2xl font-bold text-green-400">This IS for you if...</h3>
               </div>
               <ul className="space-y-4 text-gray-300">
                 <li className="flex items-start">
-                  <span className="text-green-500 mr-3 mt-1">•</span>
-                  You're tired of low-paying loads under $2.00/mile
+                  <span className="text-green-400 mr-3 mt-1">•</span>
+                  You're tired of $1.50/mile garbage loads
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-500 mr-3 mt-1">•</span>
-                  You want consistent, high-quality freight
+                  <span className="text-green-400 mr-3 mt-1">•</span>
+                  You want consistent, high-paying freight
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-500 mr-3 mt-1">•</span>
-                  You're ready to invest in professional dispatch
+                  <span className="text-green-400 mr-3 mt-1">•</span>
+                  You're ready to work with a professional dispatch team
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  <span className="text-green-400 mr-3 mt-1">•</span>
                   You have your own authority (MC number)
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-500 mr-3 mt-1">•</span>
+                  <span className="text-green-400 mr-3 mt-1">•</span>
                   You want to focus on driving, not load hunting
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-3 mt-1">•</span>
-                  You're serious about growing your business
                 </li>
               </ul>
             </motion.div>
 
-            {/* This is NOT for you if... */}
+            {/* This is NOT for you */}
             <motion.div
-              className="bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-500/30 rounded-2xl p-8"
-              initial={{ opacity: 0, x: 50 }}
+              className="bg-gradient-to-br from-red-900/30 to-red-800/30 border border-red-500/30 p-8 rounded-2xl"
+              initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-2xl">❌</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white">This is NOT for you if...</h3>
+                <div className="text-4xl mr-4">❌</div>
+                <h3 className="text-2xl font-bold text-red-400">This is NOT for you if...</h3>
               </div>
               <ul className="space-y-4 text-gray-300">
                 <li className="flex items-start">
-                  <span className="text-red-500 mr-3 mt-1">•</span>
-                  You're happy with $1.50/mile garbage loads
+                  <span className="text-red-400 mr-3 mt-1">•</span>
+                  You're happy with cheap freight
                 </li>
                 <li className="flex items-start">
-                  <span className="text-red-500 mr-3 mt-1">•</span>
+                  <span className="text-red-400 mr-3 mt-1">•</span>
                   You don't have your own MC authority
                 </li>
                 <li className="flex items-start">
-                  <span className="text-red-500 mr-3 mt-1">•</span>
-                  You're not willing to invest in quality dispatch
+                  <span className="text-red-400 mr-3 mt-1">•</span>
+                  You prefer to find your own loads
                 </li>
                 <li className="flex items-start">
-                  <span className="text-red-500 mr-3 mt-1">•</span>
-                  You prefer to find loads yourself
+                  <span className="text-red-400 mr-3 mt-1">•</span>
+                  You're not serious about growing your business
                 </li>
                 <li className="flex items-start">
-                  <span className="text-red-500 mr-3 mt-1">•</span>
-                  You're looking for free services
-                </li>
-                <li className="flex items-start">
-                  <span className="text-red-500 mr-3 mt-1">•</span>
-                  You're not committed to long-term success
+                  <span className="text-red-400 mr-3 mt-1">•</span>
+                  You don't want to pay for premium service
                 </li>
               </ul>
             </motion.div>
@@ -650,41 +931,41 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Freight Types We <span className="text-orange-500">Handle</span>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
+              <span className="text-orange-500">Premium Freight</span> We Handle
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
-              Premium rates across all equipment types. We specialize in high-value freight that pays what you deserve.
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              We specialize in high-value freight across all equipment types. See our current rate ranges below.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: "🚛", name: "Dry Van", rate: "$2.20-$3.50/mile", description: "Standard freight, consistent loads" },
-              { icon: "❄️", name: "Reefer", rate: "$2.50-$4.00/mile", description: "Temperature-controlled cargo" },
-              { icon: "🔗", name: "Power Only", rate: "$2.00-$3.20/mile", description: "Pull customer trailers" },
-              { icon: "🏗️", name: "Flatbed", rate: "$2.80-$4.50/mile", description: "Construction & heavy equipment" },
-              { icon: "📦", name: "LTL", rate: "$2.30-$3.80/mile", description: "Less-than-truckload shipments" },
-              { icon: "🚚", name: "Box Truck", rate: "$2.10-$3.40/mile", description: "Local & regional delivery" },
-              { icon: "⚡", name: "Expedited", rate: "$3.00-$5.00/mile", description: "Time-sensitive freight" },
-              { icon: "🏭", name: "Specialized", rate: "$3.50-$6.00/mile", description: "Oversized & heavy haul" }
+              { type: "🚛 Dry Van", rate: "$2.20-$3.50/mi", demand: "High" },
+              { type: "❄️ Reefer", rate: "$2.50-$4.00/mi", demand: "Very High" },
+              { type: "🏗️ Flatbed", rate: "$2.80-$4.20/mi", demand: "High" },
+              { type: "🔗 Power Only", rate: "$2.00-$3.20/mi", demand: "Medium" },
+              { type: "🚚 Box Truck", rate: "$2.10-$3.00/mi", demand: "Medium" },
+              { type: "🏭 Specialized", rate: "$3.00-$5.00/mi", demand: "Very High" },
+              { type: "🚛 Step Deck", rate: "$2.90-$4.50/mi", demand: "High" },
+              { type: "🏗️ Heavy Haul", rate: "$3.50-$6.00/mi", demand: "Very High" }
             ].map((service, index) => (
               <motion.div
-                key={service.name}
-                className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300 group"
-                initial={{ opacity: 0, y: 50 }}
+                key={index}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-orange-500/50 transition-all duration-300 hover:scale-105"
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -5, scale: 1.02 }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
               >
-                <div className="text-center">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                    {service.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{service.name}</h3>
-                  <div className="text-orange-500 font-semibold text-lg mb-2">{service.rate}</div>
-                  <p className="text-gray-400 text-sm">{service.description}</p>
+                <div className="text-2xl mb-3">{service.type}</div>
+                <div className="text-green-400 font-bold text-lg mb-2">{service.rate}</div>
+                <div className={`text-sm px-3 py-1 rounded-full inline-block ${
+                  service.demand === 'Very High' ? 'bg-red-600/20 text-red-400' :
+                  service.demand === 'High' ? 'bg-orange-600/20 text-orange-400' :
+                  'bg-yellow-600/20 text-yellow-400'
+                }`}>
+                  {service.demand} Demand
                 </div>
               </motion.div>
             ))}
@@ -702,74 +983,69 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Real Results from <span className="text-orange-500">Real Drivers</span>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
+              Real Drivers, <span className="text-orange-500">Real Results</span>
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
-              See how QuickHaulXpress transformed these owner-operators' businesses and income.
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              See how QuickHaulXpress has transformed the businesses of owner-operators just like you.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               {
+                quote: "I went from making $3,200/week to $5,800/week in just 2 months. The difference is night and day. No more cheap freight!",
                 name: "Mike Rodriguez",
                 location: "Dallas, TX",
                 equipment: "Dry Van",
-                quote: "Went from $1.80/mile to $2.65/mile average. Made an extra $45K last year!",
                 avatar: "👨‍🚛",
-                increase: "+47% Revenue"
+                increase: "+81% Weekly Revenue"
               },
               {
+                quote: "QuickHaulXpress found me consistent $3.50+/mile reefer loads. I'm finally making the money I deserve after 15 years of trucking.",
                 name: "Sarah Johnson",
-                location: "Atlanta, GA",
+                location: "Phoenix, AZ", 
                 equipment: "Reefer",
-                quote: "No more dead miles! QuickHaul keeps me loaded and profitable every week.",
                 avatar: "👩‍🚛",
-                increase: "+38% Efficiency"
+                increase: "+67% Rate Per Mile"
               },
               {
+                quote: "Best decision I ever made. Their dispatch team treats me like family and always has my back. Premium loads every week.",
                 name: "Carlos Martinez",
-                location: "Phoenix, AZ",
+                location: "Miami, FL",
                 equipment: "Flatbed",
-                quote: "Best dispatch service I've used. They actually care about my success.",
                 avatar: "👨‍🚛",
-                increase: "+52% Income"
+                increase: "+94% Monthly Profit"
               },
               {
+                quote: "I was skeptical at first, but after my first month earning $22,000, I'm a believer. These guys know what they're doing.",
                 name: "David Thompson",
-                location: "Nashville, TN",
+                location: "Atlanta, GA",
                 equipment: "Power Only",
-                quote: "Finally found a dispatch that gets me premium loads consistently.",
                 avatar: "👨‍🚛",
-                increase: "+41% Profit"
+                increase: "+73% Income Growth"
               }
             ].map((testimonial, index) => (
               <motion.div
-                key={testimonial.name}
-                className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 hover:border-orange-500 transition-all duration-300"
-                initial={{ opacity: 0, y: 50 }}
+                key={index}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700"
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
+                transition={{ duration: 0.8, delay: index * 0.2 }}
               >
-                <div className="flex items-center mb-4">
-                  <div className="text-3xl mr-3">{testimonial.avatar}</div>
+                <div className="flex items-start mb-6">
+                  <div className="text-4xl mr-4">{testimonial.avatar}</div>
                   <div>
-                    <h4 className="text-white font-semibold">{testimonial.name}</h4>
-                    <p className="text-gray-400 text-sm">{testimonial.location}</p>
+                    <h4 className="text-xl font-bold text-white">{testimonial.name}</h4>
+                    <p className="text-gray-400">{testimonial.location}</p>
+                    <p className="text-orange-500 text-sm">{testimonial.equipment}</p>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <span className="bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full text-sm">
-                    {testimonial.equipment}
-                  </span>
-                </div>
-                <blockquote className="text-gray-300 mb-4 italic">
+                <blockquote className="text-gray-300 mb-6 italic leading-relaxed">
                   "{testimonial.quote}"
                 </blockquote>
-                <div className="text-green-500 font-semibold">
+                <div className="text-green-400 font-bold text-lg">
                   {testimonial.increase}
                 </div>
               </motion.div>
@@ -779,7 +1055,7 @@ function App() {
       </section>
 
       {/* Contact Form Section */}
-      <section id="contact" className="py-20 bg-gradient-to-b from-gray-900 to-black">
+      <section id="contact" className="py-20 bg-gradient-to-b from-black to-gray-900">
         <div className="container mx-auto px-4">
           <motion.div
             className="text-center mb-16"
@@ -788,273 +1064,146 @@ function App() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
               Ready to <span className="text-orange-500">Escape</span> Garbage Loads?
             </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Fill out the form below and we'll get you started with premium freight immediately.
             </p>
           </motion.div>
 
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <form action="https://formspree.io/f/mzbledlr" method="POST" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Full Name */}
-                  <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">Full Name *</label>
-                    <input
-                      type="text"
-                      name="full_name"
-                      placeholder="Enter your full name"
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
-                      required
-                    />
-                  </div>
+          <motion.div
+            id="contact-form"
+            className="max-w-4xl mx-auto bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-gray-700"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <ContactForm />
+          </motion.div>
 
-                  {/* Phone Number */}
-                  <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">Phone Number *</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      placeholder="(555) 123-4567"
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
-                      required
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">Email Address *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="your.email@example.com"
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
-                      required
-                    />
-                  </div>
-
-                  {/* MC Number */}
-                  <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">MC Number *</label>
-                    <input
-                      type="text"
-                      name="mc_number"
-                      placeholder="MC123456"
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
-                      required
-                    />
-                  </div>
-
-                  {/* Equipment Type */}
-                  <div className="space-y-2">
-                    <label className="text-white font-semibold text-lg">Equipment Type *</label>
-                    <select
-                      name="equipment_type"
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
-                      required
-                    >
-                      <option value="">Select your equipment</option>
-                      <option value="dry_van">🚛 Dry Van</option>
-                      <option value="reefer">❄️ Reefer</option>
-                      <option value="flatbed">🏗️ Flatbed</option>
-                      <option value="power_only">🔗 Power Only</option>
-                      <option value="box_truck">🚚 Box Truck</option>
-                      <option value="specialized">🏭 Specialized</option>
-                    </select>
-                  </div>
-
-                  {/* ZIP Code with Location Lookup */}
-                  <ZipCodeLookup />
-                </div>
-
-                {/* File Upload Section */}
-                <div className="space-y-6">
-                  <h3 className="text-white font-semibold text-xl">Required Documents</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* W-9 Upload */}
-                    <div className="space-y-2">
-                      <label className="text-white font-semibold">Upload W-9 *</label>
-                      <input
-                        type="file"
-                        name="w9"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
-                        required
-                      />
-                    </div>
-
-                    {/* Certificate of Insurance Upload */}
-                    <div className="space-y-2">
-                      <label className="text-white font-semibold">Certificate of Insurance *</label>
-                      <input
-                        type="file"
-                        name="coi"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
-                        required
-                      />
-                    </div>
-
-                    {/* MC Authority Upload */}
-                    <div className="space-y-2">
-                      <label className="text-white font-semibold">MC Authority *</label>
-                      <input
-                        type="file"
-                        name="mc_authority"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
-                        required
-                      />
-                    </div>
-
-                    {/* Factoring NOA or Voided Check Upload */}
-                    <div className="space-y-2">
-                      <label className="text-white font-semibold">Factoring NOA or Voided Check *</label>
-                      <input
-                        type="file"
-                        name="factoring_doc"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600 transition-all duration-300"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Current Rate */}
-                <div className="space-y-4">
-                  <label className="text-white font-semibold text-lg">What's your current average rate per mile?</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { value: "under_1_50", label: "Under $1.50" },
-                      { value: "1_50_2_00", label: "$1.50-$2.00" },
-                      { value: "2_00_2_50", label: "$2.00-$2.50" },
-                      { value: "over_2_50", label: "Over $2.50" }
-                    ].map((rate) => (
-                      <label key={rate.value} className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="current_rate"
-                          value={rate.value}
-                          className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 focus:ring-orange-500"
-                          required
-                        />
-                        <span className="text-white">{rate.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Urgency */}
-                <div className="space-y-4">
-                  <label className="text-white font-semibold text-lg">How soon do you need loads?</label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                      { value: "immediately", label: "🚨 Immediately" },
-                      { value: "this_week", label: "📅 This Week" },
-                      { value: "next_week", label: "⏰ Next Week" }
-                    ].map((urgency) => (
-                      <label key={urgency.value} className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="urgency"
-                          value={urgency.value}
-                          className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 focus:ring-orange-500"
-                          required
-                        />
-                        <span className="text-white">{urgency.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Additional Comments */}
-                <div className="space-y-2">
-                  <label className="text-white font-semibold text-lg">Additional Comments</label>
-                  <textarea
-                    name="comments"
-                    rows="4"
-                    placeholder="Tell us about your preferred lanes, any special requirements, or questions you have..."
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 resize-none"
-                  ></textarea>
-                </div>
-
-                {/* Submit Button */}
-                <motion.button
-                  type="submit"
-                  className="w-full gradient-orange text-white font-bold py-4 px-8 rounded-lg hover:scale-105 transition-all duration-300 text-lg"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Send className="w-5 h-5 mr-3 inline" />
-                  Get Started with Premium Loads
-                </motion.button>
-              </form>
-            </motion.div>
-
-            {/* Contact Information */}
-            <motion.div
-              className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <h4 className="text-white font-semibold">Call Us</h4>
-                <p className="text-gray-300">(614) 714-6637</p>
-                <p className="text-sm text-gray-400">Mon-Fri 7AM-7PM EST</p>
+          {/* Contact Info */}
+          <motion.div
+            className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                <Phone className="w-8 h-8 text-white" />
               </div>
+              <h3 className="text-xl font-bold mb-2">Call Us</h3>
+              <p className="text-gray-300">(614) 714-6637</p>
+              <p className="text-sm text-gray-400">Mon-Fri 7AM-7PM EST</p>
+            </div>
 
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
-                  <Mail className="w-6 h-6 text-white" />
-                </div>
-                <h4 className="text-white font-semibold">Email Us</h4>
-                <p className="text-gray-300">lucas.otrdispatch@gmail.com</p>
-                <p className="text-sm text-gray-400">24/7 Response</p>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                <Mail className="w-8 h-8 text-white" />
               </div>
+              <h3 className="text-xl font-bold mb-2">Email Us</h3>
+              <p className="text-gray-300">dispatch@quickhaulxpressllc.dpdns.org</p>
+              <p className="text-sm text-gray-400">24/7 Response</p>
+            </div>
 
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto">
-                  <MessageSquare className="w-6 h-6 text-white" />
-                </div>
-                <h4 className="text-white font-semibold">Text Us</h4>
-                <p className="text-gray-300">(614) 714-6637</p>
-                <p className="text-sm text-gray-400">Instant Response</p>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                <MessageSquare className="w-8 h-8 text-white" />
               </div>
-            </motion.div>
-          </div>
+              <h3 className="text-xl font-bold mb-2">Text Us</h3>
+              <p className="text-gray-300">(614) 714-6637</p>
+              <p className="text-sm text-gray-400">Instant Response</p>
+            </div>
+          </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 border-t border-gray-800 py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="flex items-center space-x-3 mb-4 md:mb-0">
+              <img 
+                src="/logo.png" 
+                alt="QuickHaulXpress Logo" 
+                className="h-8 w-8 object-contain"
+              />
+              <div className="flex text-lg font-bold">
+                <span className="text-white">Quick</span>
+                <span className="text-orange-500">Haul</span>
+                <span className="text-white">Xpress</span>
+              </div>
+            </div>
+            
+            {/* Social Media Icons */}
+            <div className="flex items-center space-x-4 mb-4 md:mb-0">
+              <a 
+                href="https://facebook.com/quickhaulxpress" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-300"
+                title="Follow us on Facebook"
+              >
+                <Facebook className="w-5 h-5 text-white" />
+              </a>
+              <a 
+                href="https://twitter.com/quickhaulxpress" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-300"
+                title="Follow us on Twitter"
+              >
+                <Twitter className="w-5 h-5 text-white" />
+              </a>
+              <a 
+                href="https://www.instagram.com/quickhaulxpressllc/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-300"
+                title="Follow us on Instagram"
+              >
+                <Instagram className="w-5 h-5 text-white" />
+              </a>
+              <a 
+                href="https://linkedin.com/company/quickhaulxpress" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-300"
+                title="Connect with us on LinkedIn"
+              >
+                <Linkedin className="w-5 h-5 text-white" />
+              </a>
+            </div>
+            
+            <div className="text-center md:text-right">
+              <p className="text-gray-400 text-sm">
+                © 2024 QuickHaulXpress. All rights reserved.
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                Premium dispatch services for professional owner-operators
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Onboarding Popup */}
       <AnimatePresence>
         {showOnboardingPopup && (
           <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-orange-500 max-w-md w-full relative"
+              className="bg-gradient-to-br from-gray-800 to-gray-900 p-8 rounded-2xl border border-orange-500/50 max-w-md w-full relative"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
             >
               <button
                 onClick={() => setShowOnboardingPopup(false)}
@@ -1065,17 +1214,15 @@ function App() {
               
               <div className="text-center">
                 <div className="text-4xl mb-4">🚛</div>
-                <h3 className="text-2xl font-bold text-white mb-4">
-                  Ready to Escape Garbage Loads?
-                </h3>
+                <h3 className="text-2xl font-bold mb-4">Ready to Escape Garbage Loads?</h3>
                 <p className="text-gray-300 mb-6">
-                  Join 500+ owner-operators making $2.50+ per mile with premium freight.
+                  Join 500+ owner-operators earning $2.50+ per mile with premium freight.
                 </p>
                 <div className="space-y-3">
                   <Button
                     onClick={() => {
-                      handleCallNow();
                       setShowOnboardingPopup(false);
+                      handleCallNow();
                     }}
                     className="w-full gradient-orange"
                   >
@@ -1084,14 +1231,14 @@ function App() {
                   </Button>
                   <Button
                     onClick={() => {
-                      handleTextDispatch();
                       setShowOnboardingPopup(false);
+                      scrollToForm();
                     }}
                     variant="outline"
                     className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Text Us Now
+                    <FileText className="w-4 h-4 mr-2" />
+                    Fill Out Form
                   </Button>
                 </div>
               </div>
@@ -1104,37 +1251,32 @@ function App() {
       <AnimatePresence>
         {showStickyBar && (
           <motion.div
-            className="fixed bottom-4 right-4 z-40"
+            className="fixed bottom-4 right-4 z-40 flex flex-col gap-3"
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
-            transition={{ duration: 0.3 }}
           >
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full p-3 shadow-lg">
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleCallNow}
-                  className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 group"
-                  title="Call Now"
-                >
-                  <Phone className="w-6 h-6 text-orange-500" />
-                </button>
-                <button
-                  onClick={handleTextDispatch}
-                  className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 group"
-                  title="Text Us"
-                >
-                  <MessageCircle className="w-6 h-6 text-orange-500" />
-                </button>
-                <button
-                  onClick={() => window.open("mailto:lucas.otrdispatch@gmail.com", "_blank")}
-                  className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 group"
-                  title="Email Us"
-                >
-                  <Mail className="w-6 h-6 text-orange-500" />
-                </button>
-              </div>
-            </div>
+            <Button
+              onClick={handleCallNow}
+              className="w-14 h-14 rounded-full gradient-orange shadow-lg hover:scale-110 transition-transform"
+              title="Call Now"
+            >
+              <Phone className="w-6 h-6" />
+            </Button>
+            <Button
+              onClick={handleTextDispatch}
+              className="w-14 h-14 rounded-full bg-green-600 hover:bg-green-700 shadow-lg hover:scale-110 transition-transform"
+              title="Text Us"
+            >
+              <MessageCircle className="w-6 h-6" />
+            </Button>
+            <Button
+              onClick={() => window.open("mailto:dispatch@quickhaulxpressllc.dpdns.org", "_blank")}
+              className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg hover:scale-110 transition-transform"
+              title="Email Us"
+            >
+              <Mail className="w-6 h-6" />
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
