@@ -140,7 +140,7 @@ const ContactForm = () => {
 
       // For development, use localhost. For production, use your deployed backend URL
       const backendUrl = process.env.NODE_ENV === 'production' 
-        ? "https://lnh8imcd0q78.manus.space" 
+        ? "https://3dhkilcqv78l.manus.space" 
         : 'http://localhost:5000';
 
       const response = await fetch(`${backendUrl}/api/contact/submit`, {
