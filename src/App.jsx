@@ -77,12 +77,14 @@ const ContactForm = () => {
     full_name: '',
     phone: '',
     email: '',
-    mc_number: '',
-    equipment_type: '',
-    zip_code: '',
-    location: '',
-    current_rate: '',
-    urgency: '',
+    mc_number: 
+    equipment_type: 
+    trailer_length: 
+    preferred_lanes: [],
+    zip_code: 
+    location: 
+    current_rate: 
+    urgency: 
     comments: ''
   });
   const [files, setFiles] = useState({
@@ -101,6 +103,18 @@ const ContactForm = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, value, checked } = e.target;
+    if (name === 'preferred_lanes') {
+      setFormData(prev => ({
+        ...prev,
+        preferred_lanes: checked 
+          ? [...prev.preferred_lanes, value]
+          : prev.preferred_lanes.filter(lane => lane !== value)
+      }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -265,6 +279,59 @@ const ContactForm = () => {
             <option value="box_truck">🚚 Box Truck</option>
             <option value="specialized">🏭 Specialized</option>
           </select>
+        </div>
+
+        {/* Trailer Length */}
+        <div className="space-y-2">
+          <label className="text-white font-semibold text-lg">Length of Trailer (in feet)</label>
+          <input
+            type="number"
+            name="trailer_length"
+            value={formData.trailer_length}
+            onChange={handleInputChange}
+            placeholder="e.g., 53, 48"
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+          />
+        </div>
+
+        {/* Preferred Lanes */}
+        <div className="space-y-2">
+          <label className="text-white font-semibold text-lg">Preferred Lanes <span className="text-gray-400 text-sm">(Choose all that apply)</span></label>
+          <div className="flex flex-col space-y-2">
+            <label className="flex items-center space-x-2 text-white">
+              <input
+                type="checkbox"
+                name="preferred_lanes"
+                value="OTR"
+                checked={formData.preferred_lanes.includes("OTR")}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
+              />
+              <span>OTR (Over-The-Road)</span>
+            </label>
+            <label className="flex items-center space-x-2 text-white">
+              <input
+                type="checkbox"
+                name="preferred_lanes"
+                value="Regional"
+                checked={formData.preferred_lanes.includes("Regional")}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
+              />
+              <span>Regional</span>
+            </label>
+            <label className="flex items-center space-x-2 text-white">
+              <input
+                type="checkbox"
+                name="preferred_lanes"
+                value="Local"
+                checked={formData.preferred_lanes.includes("Local")}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
+              />
+              <span>Local</span>
+            </label>
+          </div>
         </div>
 
         {/* ZIP Code with Location Lookup */}
