@@ -74,18 +74,18 @@ const ZipCodeLookup = ({ onLocationChange }) => {
 // Contact Form Component
 const ContactForm = () => {
   const [formData, setFormData] = useState({
-    full_name: '',
-    phone: '',
-    email: '',
-    mc_number: 
-    equipment_type: 
-    trailer_length: 
+    full_name: "",
+    phone: "",
+    email: "",
+    mc_number: "",
+    equipment_type: "",
+    trailer_length: "",
     preferred_lanes: [],
-    zip_code: 
-    location: 
-    current_rate: 
-    urgency: 
-    comments: ''
+    zip_code: "",
+    location: "",
+    current_rate: "",
+    urgency: "",
+    comments: ""
   });
   const [files, setFiles] = useState({
     w9: null,
